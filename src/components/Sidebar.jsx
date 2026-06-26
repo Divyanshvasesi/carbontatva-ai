@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import {
   Zap,
   Plus,
@@ -5,15 +6,17 @@ import {
   MessageSquare,
   Settings,
   HelpCircle,
+  LogOut,
 } from 'lucide-react'
+import { useAuth } from '../context/AuthContext'
 
 const recentChats = [
-  { label: 'Motor Efficiency', color: 'text-gray-700' },
-  { label: 'Boiler Audit', color: 'text-gray-700' },
-  { label: 'Renewable Integration', color: 'text-brand-green' },
-  { label: 'Scope 2 Reduction', color: 'text-gray-700' },
-  { label: 'HVAC Optimization', color: 'text-orange-400' },
-  { label: 'Compressed Air Savi...', color: 'text-gray-700', truncate: true },
+  { label: 'Motor Efficiency', active: true },
+  { label: 'Boiler Audit' },
+  { label: 'Renewable Integration' },
+  { label: 'Scope 2 Reduction' },
+  { label: 'HVAC Optimization' },
+  { label: 'Compressed Air Savings', truncate: true },
 ]
 
 export function LogoIcon({ size = 32 }) {
@@ -29,8 +32,16 @@ export function LogoIcon({ size = 32 }) {
 }
 
 export default function Sidebar() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
+
   return (
-    <aside className="w-[210px] shrink-0 bg-white border-r border-gray-100 flex flex-col">
+    <aside className="w-[210px] shrink-0 bg-white dark:bg-gray-800 border-r border-gray-100 dark:border-gray-700 flex flex-col transition-colors duration-200">
       <div className="p-4">
         <div className="flex items-center gap-2.5">
           <LogoIcon size={32} />
@@ -54,7 +65,7 @@ export default function Sidebar() {
         <input
           type="text"
           placeholder="Search chats..."
-          className="w-full bg-gray-100 rounded-xl pl-9 pr-3 py-2 text-sm border-none outline-none placeholder:text-gray-400"
+          className="w-full bg-gray-100 dark:bg-gray-700 rounded-xl pl-9 pr-3 py-2 text-sm border-none outline-none placeholder:text-gray-400 text-text-primary dark:text-white transition-colors"
         />
       </div>
 
@@ -63,14 +74,25 @@ export default function Sidebar() {
           Recent Chats
         </p>
         <ul>
-          {recentChats.map(({ label, color, truncate }) => (
+          {recentChats.map(({ label, active, truncate }) => (
             <li key={label}>
               <button
                 type="button"
-                className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                  active
+                    ? 'border-l-2 border-brand-green bg-green-50 dark:bg-green-900/20 text-brand-green'
+                    : 'hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                }`}
               >
-                <MessageSquare size={15} className="text-gray-400 shrink-0" />
-                <span className={`text-sm ${color} ${truncate ? 'truncate' : ''}`}>{label}</span>
+                <MessageSquare
+                  size={15}
+                  className={active ? 'text-brand-green shrink-0' : 'text-gray-400 dark:text-gray-500 shrink-0'}
+                />
+                <span
+                  className={`text-sm ${active ? 'text-brand-green font-medium' : 'text-gray-700 dark:text-gray-300'} ${truncate ? 'truncate' : ''}`}
+                >
+                  {label}
+                </span>
               </button>
             </li>
           ))}
@@ -80,17 +102,25 @@ export default function Sidebar() {
       <div className="pb-4">
         <button
           type="button"
-          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg cursor-pointer transition-colors"
         >
           <Settings size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-500">Settings</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Settings</span>
         </button>
         <button
           type="button"
-          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg cursor-pointer transition-colors"
         >
           <HelpCircle size={16} className="text-gray-400" />
-          <span className="text-sm text-gray-500">Help & Documentation</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">Help &amp; Documentation</span>
+        </button>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-4 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg cursor-pointer transition-colors group"
+        >
+          <LogOut size={16} className="text-gray-400 group-hover:text-red-500 transition-colors" />
+          <span className="text-sm text-gray-500 dark:text-gray-400 group-hover:text-red-500 dark:group-hover:text-red-400 transition-colors">Log Out</span>
         </button>
       </div>
     </aside>
