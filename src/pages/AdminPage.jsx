@@ -168,16 +168,24 @@ export default function AdminPage() {
     saveRequests(requests)
   }, [requests])
 
+  // On mount: sync ct_approved_emails from any already-approved requests
+  // so stale localStorage data still works
+  useEffect(() => {
+    requests
+      .filter(r => r.status === 'approved')
+      .forEach(r => approveUser(r.email, r.name))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const pending = requests.filter(r => r.status === 'pending').length
 
+  // Move approve/revoke OUTSIDE setState to avoid React StrictMode double-call
   const updateStatus = (id, newStatus) => {
-    setRequests(prev => prev.map(r => {
-      if (r.id !== id) return r
-      // Update real auth approved list
-      if (newStatus === 'approved') approveUser(r.email, r.name)
-      else revokeUser(r.email)
-      return { ...r, status: newStatus }
-    }))
+    const target = requests.find(r => r.id === id)
+    if (!target) return
+    if (newStatus === 'approved') approveUser(target.email, target.name)
+    else revokeUser(target.email)
+    setRequests(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r))
   }
 
   const filtered = requests.filter(r =>
