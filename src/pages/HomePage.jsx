@@ -9,8 +9,13 @@ import {
   FileText,
   Paperclip,
   SendHorizontal,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import Sidebar, { LogoIcon } from '../components/Sidebar'
+import { useTheme } from '../context/ThemeContext'
+import { useAuth } from '../context/AuthContext'
+import { useChatContext } from '../context/ChatContext'
 
 const suggestionCards = [
   {
@@ -42,13 +47,26 @@ const suggestionCards = [
 export default function HomePage() {
   const navigate = useNavigate()
   const [input, setInput] = useState('')
+  const { isDark, toggleTheme } = useTheme()
+  const { user } = useAuth()
+  const { sendUserMessage } = useChatContext()
+  const initials = user?.name ? user.name.slice(0, 2).toUpperCase() : 'U'
+
+  const handleSend = async () => {
+    const text = input.trim()
+    if (!text) return
+    setInput('')
+    navigate('/chat')
+    // Small delay so ChatPage mounts before we update state
+    setTimeout(() => sendUserMessage(text), 50)
+  }
 
   return (
     <div className="h-screen flex overflow-hidden font-sans bg-[#F1F5F9] dark:bg-gray-900 transition-colors duration-200">
       <Sidebar />
 
       <main className="flex-1 flex flex-col bg-[#F1F5F9] dark:bg-gray-900 overflow-hidden min-w-0 transition-colors duration-200">
-        <header className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 py-3 flex justify-end items-center gap-4 shrink-0 transition-colors duration-200">
+        <header className="bg-white dark:bg-gray-800 border-b border-gray-100 dark:border-gray-700 px-6 py-3 flex justify-end items-center gap-3 shrink-0 transition-colors duration-200">
           <button type="button" className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors">
             <History size={20} />
           </button>
@@ -57,10 +75,22 @@ export default function HomePage() {
           </button>
           <button
             type="button"
+            id="home-theme-toggle"
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+            aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+            title={isDark ? 'Light mode' : 'Dark mode'}
+          >
+            {isDark ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+          <button
+            type="button"
             onClick={() => navigate('/profile')}
-            className="w-9 h-9 rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+            className="w-9 h-9 rounded-full bg-brand-green flex items-center justify-center shrink-0 cursor-pointer hover:opacity-90 transition-opacity text-white text-xs font-bold"
             aria-label="Open profile"
-          />
+          >
+            {initials}
+          </button>
         </header>
 
         <div className="flex-1 flex flex-col items-center justify-center px-6 pb-4 overflow-y-auto">
@@ -99,8 +129,9 @@ export default function HomePage() {
               />
               <button
                 type="button"
-                onClick={() => navigate('/chat')}
-                className="w-9 h-9 rounded-xl bg-brand-green hover:bg-brand-greenHover flex items-center justify-center shrink-0 transition-colors"
+                onClick={handleSend}
+                disabled={!input.trim()}
+                className="w-9 h-9 rounded-xl bg-brand-green hover:bg-brand-greenHover disabled:opacity-50 flex items-center justify-center shrink-0 transition-colors"
               >
                 <SendHorizontal size={16} className="text-white" />
               </button>
